@@ -1,5 +1,7 @@
 package tests.hover
 
+import java.util
+
 object HoverTest extends BaseHoverTest {
 
   check(
@@ -306,5 +308,16 @@ object HoverTest extends BaseHoverTest {
       |sealed trait <<W>>[T]
     """.stripMargin,
     "sealed trait W"
+  )
+
+  check(
+    "jdk",
+    """
+      |object x {
+      |  val <<entry>> =
+      |    new java.util.HashMap[java.lang.Integer, java.lang.String]().entrySet()
+      |}
+    """.stripMargin,
+    "val entry: Set[Map.Entry[Integer, String]]"
   )
 }

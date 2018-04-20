@@ -1,7 +1,6 @@
 package tests.hover
 
-// disabled until Type pretty-printing is fixed
-class HoverTest extends BaseHoverTest {
+object HoverTest extends BaseHoverTest {
 
   check(
     "val assignment",
@@ -215,7 +214,7 @@ class HoverTest extends BaseHoverTest {
       |  List(1) match { case <<x>> :: Nil => }
       |}
     """.stripMargin,
-    "val x: Int"
+    "Int"
   )
 
   check(
@@ -225,7 +224,7 @@ class HoverTest extends BaseHoverTest {
       |  List(1) match { case List(<<x>>) => }
       |}
     """.stripMargin,
-    "val x: Int"
+    "Int"
   )
 
   check(
@@ -298,6 +297,14 @@ class HoverTest extends BaseHoverTest {
       |  type <<F>>[T] <: Any
       |}
     """.stripMargin,
-    "type F"
+    "type F[T]"
+  )
+
+  check(
+    "mods",
+    """
+      |sealed trait <<W>>[T]
+    """.stripMargin,
+    "sealed trait W"
   )
 }

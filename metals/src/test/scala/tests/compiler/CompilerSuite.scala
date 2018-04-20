@@ -1,5 +1,7 @@
 package tests.compiler
 
+import java.nio.file.Files
+import org.langmeta.io.AbsolutePath
 import scala.meta.interactive.InteractiveSemanticdb
 import scala.meta.metals.Uri
 import scala.meta.metals.compiler.Cursor
@@ -15,6 +17,8 @@ class CompilerSuite extends MegaSuite {
       "-Ywarn-unused-import" ::
       Nil
   )
+
+  val sourceDirectory = AbsolutePath(Files.createTempDirectory("metals"))
 
   def toDocument(name: String, code: String): Document = {
     InteractiveSemanticdb.toDocument(compiler, code, name, 10000)
@@ -33,7 +37,8 @@ class CompilerSuite extends MegaSuite {
     carets match {
       case (start, end) :: Nil =>
         val code = chevrons.replaceAllIn(markup, "$1")
-        Cursor(Uri.file(filename), code, start)
+        val uri = Uri(sourceDirectory.resolve(filename))
+        Cursor(uri, code, start)
       case els =>
         throw new IllegalArgumentException(
           s"Expected one chevron, found ${els.length}"

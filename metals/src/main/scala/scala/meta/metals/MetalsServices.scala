@@ -48,6 +48,8 @@ import org.langmeta.io.AbsolutePath
 import org.langmeta.languageserver.InputEnrichments._
 import org.langmeta.lsp.LanguageClient
 import org.langmeta.internal.semanticdb._
+import scala.meta.metals.compiler.MetacpProvider
+import scala.meta.metals.compiler.SymtabProvider
 
 class MetalsServices(
     cwd: AbsolutePath,
@@ -85,6 +87,13 @@ class MetalsServices(
   val diagnosticsProvider =
     new DiagnosticsProvider(configurationPublisher, cwd)
   val scalacProvider = new ScalacProvider
+  val metacpProvider = new MetacpProvider
+  val symtabProvider =
+    new SymtabProvider(
+      symbolIndex.documentIndex,
+      scalacProvider,
+      metacpProvider
+    )
   val interactiveSemanticdbs: Observable[m.Database] =
     sourceChangePublisher
       .debounce(FiniteDuration(1, "s"))
@@ -315,6 +324,7 @@ class MetalsServices(
       if (latestConfig().hover.enabled) {
         HoverProvider.hover(
           symbolIndex,
+          symtabProvider,
           Uri(params.textDocument),
           params.position.line,
           params.position.character
@@ -493,10 +503,11 @@ class MetalsServices(
 
 object MetalsServices extends LazyLogging {
   lazy val cacheDirectory: AbsolutePath = {
+    val cacheVersion = "0.1"
     val path = AbsolutePath(
       ProjectDirectories.fromProjectName("metals").projectCacheDir
     )
-    Files.createDirectories(path.toNIO)
+    Files.createDirectories(path.resolve(cacheVersion).toNIO)
     path
   }
 

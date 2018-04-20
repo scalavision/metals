@@ -6,6 +6,8 @@ import scala.meta.metals.providers.HoverProvider
 import scala.{meta => m}
 import tests.search.BaseIndexTest
 import io.circe.syntax._
+import java.nio.file.Files
+import org.langmeta.io.AbsolutePath
 
 abstract class BaseHoverTest extends BaseIndexTest {
 
@@ -17,12 +19,17 @@ abstract class BaseHoverTest extends BaseIndexTest {
     targeted(
       filename,
       code, { point =>
-        val uri = Uri.file(filename)
+        val uri = Uri(sourceDirectory.resolve(filename))
         val input = m.Input.VirtualFile(uri.value, point.contents)
         val pos = m.Position.Range(input, point.offset, point.offset)
         indexInput(uri, point.contents)
-        val result =
-          HoverProvider.hover(symbols, uri, pos.startLine, pos.startColumn)
+        val result = HoverProvider.hover(
+          symbols,
+          symtabs,
+          uri,
+          pos.startLine,
+          pos.startColumn
+        )
         f(result)
       }
     )

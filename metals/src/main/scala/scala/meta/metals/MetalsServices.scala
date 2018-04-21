@@ -50,6 +50,7 @@ import org.langmeta.lsp.LanguageClient
 import org.langmeta.internal.semanticdb._
 import scala.meta.metals.compiler.MetacpProvider
 import scala.meta.metals.compiler.SymtabProvider
+import scala.meta.metals.mtags.Mtags
 
 class MetalsServices(
     cwd: AbsolutePath,
@@ -503,11 +504,10 @@ class MetalsServices(
 
 object MetalsServices extends LazyLogging {
   lazy val cacheDirectory: AbsolutePath = {
-    val cacheVersion = "0.1"
     val path = AbsolutePath(
       ProjectDirectories.fromProjectName("metals").projectCacheDir
     )
-    Files.createDirectories(path.resolve(cacheVersion).toNIO)
+    Files.createDirectories(path.resolve(Mtags.Version).toNIO)
     path
   }
 

@@ -90,33 +90,39 @@ object JavaMtags {
           visitFields(cls.getFields)
         }
 
+      val primitives = Map[String,String](
+        "int" -> "Int",
+        "long" -> "Long",
+        "char" -> "Char",
+        "boolean" -> "Boolean",
+        "double" -> "Double",
+        "float" -> "Float",
+        "short" -> "Short"
+      )
+
       private def getDisambiguator(params: java.util.List[JavaParameter]): String = {
-
-        def extractType(s: String)= {
-          if(s.contains("int")) "Int"
-          else if(s.contains("String")) "String"
-          else if(s.contains("long")) "Long"
-          else if(s.contains("char")) "Char"
-          else if(s.contains("boolean")) "Boolean"
-          else if(s.contains("double")) "Double"
-          else if(s.contains("float")) "Float"
-          else if(s.contains("short")) "Short"
-          else s
-        }
-
         if(params.isEmpty) "()"
         else {
           val sb = new StringBuilder()
           params.forEach { param =>
-            val t = extractType(param.getType().getValue)
+            val name = param.getType().getValue()
+            def extractName(): String = {
+              val tpe = param.getType().getValue()
+              val idx = tpe.lastIndexOf('.')
+              if(idx < 0) tpe
+              else tpe.substring(idx + 1)
+            }
+            val p = primitives.getOrElse(name, extractName())
             if(sb.length > 1) {
               sb.append(",")
             }
-            sb.append(t)
+            sb.append(p)
+            if(param.isVarArgs){
+              sb.append("*")
+            }
           }
           "(" + sb.append(")").mkString
         }
-
       }
 
       def visitMember[T <: JavaMember](m: T): Unit =

@@ -171,8 +171,8 @@ object JavaMtagsTest extends BaseMtagsTest {
       |
       |class A {
       |  void method(int a, String b);
-      |
       |  void method(int a, double b);
+      |  void method(int a, String b, long c, char d, boolean e, double f, float g, short h);
       |}
     """.stripMargin,
     """
@@ -183,13 +183,42 @@ object JavaMtagsTest extends BaseMtagsTest {
       |[8..9): l => l.
       |[18..19): A <= l.A#
       |[29..35): method <= l.A#method(Int,String).
-      |[62..68): method <= l.A#method(Int,Double).
+      |[61..67): method <= l.A#method(Int,Double).
+      |[93..99): method <= l.A#method(Int,String,Long,Char,Boolean,Double,Float,Short).
       |
       |Symbols:
       |l. => javadefined package l
       |l.A# => javadefined class A
       |l.A#method(Int,Double). => javadefined method method
       |l.A#method(Int,String). => javadefined method method
+      |l.A#method(Int,String,Long,Char,Boolean,Double,Float,Short). => javadefined method method
+    """.stripMargin
+  )
+
+  check("non_java_primitives.java",
+    """package l;
+      |
+      |class A {
+      |  void method(Person p, java.util.List<Person> otherPersons);
+      |  void method(Person... p);
+      |}
+    """.stripMargin,
+    """
+      |Language:
+      |Java
+      |
+      |Names:
+      |[8..9): l => l.
+      |[18..19): A <= l.A#
+      |[29..35): method <= l.A#method(Person,List).
+      |[91..97): method <= l.A#method(Person*).
+      |
+      |Symbols:
+      |l. => javadefined package l
+      |l.A# => javadefined class A
+      |l.A#method(Person*). => javadefined method method
+      |l.A#method(Person,List). => javadefined method method
+      |
     """.stripMargin
   )
 

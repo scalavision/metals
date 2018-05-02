@@ -139,7 +139,34 @@ object JavaMtagsTest extends BaseMtagsTest {
     """.stripMargin
   )
 
-  test("index a few sources from the JDK") {
+  check("overload.java",
+    """package l;
+      |
+      |class A {
+      |  void method(int a);
+      |
+      |  void method(String a);
+      |}
+    """.stripMargin,
+    """
+      |Language:
+      |Java
+      |
+      |Names:
+      |[8..9): l => l.
+      |[18..19): A <= l.A#
+      |[29..35): method <= l.A#method(Int).
+      |[52..58): method <= l.A#method(String).
+      |
+      |Symbols:
+      |l. => javadefined package l
+      |l.A# => javadefined class A
+      |l.A#method(Int). => javadefined method method
+      |l.A#method(String). => javadefined method method
+    """.stripMargin
+  )
+
+  ignore("index a few sources from the JDK") {
     val jdk = CompilerConfig.jdkSources.get
     val DefaultFileSystem =
       Paths.get("java").resolve("io").resolve("DefaultFileSystem.java")
@@ -174,8 +201,8 @@ object JavaMtagsTest extends BaseMtagsTest {
   }
 
   // Ignored because it's slow
-  ignore("index JDK") {
-    val db = Mtags.indexDatabase(CompilerConfig.jdkSources.get :: Nil)
-    pprint.log(db.documents.length)
-  }
+//  ignore("index JDK") {
+//    val db = Mtags.indexDatabase(CompilerConfig.jdkSources.get :: Nil)
+//    pprint.log(db.documents.length)
+//  }
 }

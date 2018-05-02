@@ -166,6 +166,33 @@ object JavaMtagsTest extends BaseMtagsTest {
     """.stripMargin
   )
 
+  check("overload_multiple_args.java",
+    """package l;
+      |
+      |class A {
+      |  void method(int a, String b);
+      |
+      |  void method(int a, double b);
+      |}
+    """.stripMargin,
+    """
+      |Language:
+      |Java
+      |
+      |Names:
+      |[8..9): l => l.
+      |[18..19): A <= l.A#
+      |[29..35): method <= l.A#method(Int,String).
+      |[62..68): method <= l.A#method(Int,Double).
+      |
+      |Symbols:
+      |l. => javadefined package l
+      |l.A# => javadefined class A
+      |l.A#method(Int,Double). => javadefined method method
+      |l.A#method(Int,String). => javadefined method method
+    """.stripMargin
+  )
+
   ignore("index a few sources from the JDK") {
     val jdk = CompilerConfig.jdkSources.get
     val DefaultFileSystem =

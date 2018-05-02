@@ -4,11 +4,7 @@ import java.io.StringReader
 import scala.meta.internal.semanticdb3.SymbolInformation.Property
 import scala.meta.internal.semanticdb3.SymbolInformation.Kind
 import com.thoughtworks.qdox._
-import com.thoughtworks.qdox.model.JavaClass
-import com.thoughtworks.qdox.model.JavaField
-import com.thoughtworks.qdox.model.JavaMember
-import com.thoughtworks.qdox.model.JavaMethod
-import com.thoughtworks.qdox.model.JavaModel
+import com.thoughtworks.qdox.model._
 import org.langmeta.inputs.Input
 import org.langmeta.inputs.Position
 import org.langmeta.languageserver.InputEnrichments._
@@ -94,6 +90,35 @@ object JavaMtags {
           visitFields(cls.getFields)
         }
 
+      private def getDisambiguator(params: java.util.List[JavaParameter]): String = {
+
+        def extractType(s: String)= {
+          if(s.contains("int")) "Int"
+          else if(s.contains("String")) "String"
+          else if(s.contains("long")) "Long"
+          else if(s.contains("char")) "Char"
+          else if(s.contains("boolean")) "Boolean"
+          else if(s.contains("double")) "Double"
+          else if(s.contains("float")) "Float"
+          else if(s.contains("short")) "Short"
+          else s
+        }
+
+        if(params.isEmpty) "()"
+        else {
+          val sb = new StringBuilder()
+          params.forEach { param =>
+            val t = extractType(param.getType().getValue)
+            if(sb.length > 1) {
+              sb.append(",")
+            }
+            sb.append(t)
+          }
+          "(" + sb.append(")").mkString
+        }
+
+      }
+
       def visitMember[T <: JavaMember](m: T): Unit =
         withOwner(owner) {
           val name = m.getName
@@ -102,6 +127,9 @@ object JavaMtags {
             case c: JavaField => c.lineNumber
             // TODO(olafur) handle constructos
             case _ => 0
+          }
+          val methodParams = m match {
+            case c: JavaMethod => c.getParameters
           }
           val pos = toRangePosition(line, name)
           val kind: Kind = m match {
@@ -112,7 +140,7 @@ object JavaMtags {
               else Kind.CLASS
             case _ => Kind.UNKNOWN_KIND
           }
-          term(name, pos, kind, 0)
+          method(name, getDisambiguator(methodParams), pos, kind, 0)
         }
       override def language: Language = Language.JAVA
     }
